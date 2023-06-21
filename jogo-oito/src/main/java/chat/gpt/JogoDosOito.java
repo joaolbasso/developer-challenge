@@ -2,19 +2,21 @@ package chat.gpt;
 
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.util.ArrayList;
+import java.util.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
-public class JogoDosOito extends JFrame implements KeyListener {
-
-	private int[][] tabuleiro = { { 1, 2, 3 }, { 4, 5, 6 }, { 7, 8, 0 } };
+public class JogoDosOito extends JFrame implements KeyListener, ActionListener {
+	private int[][] tabuleiro = { { 1, 2, 3 }, { 4, 5, 6 }, { 7, 0, 8 } };
 	private JButton[][] botoes = new JButton[3][3];
 	private JButton botaoReiniciar;
 
@@ -29,6 +31,8 @@ public class JogoDosOito extends JFrame implements KeyListener {
 				JButton botao = new JButton();
 				botao.setFont(new Font("Arial", Font.BOLD, 36));
 				botoes[i][j] = botao;
+				//Adicionado listeners a cada botao para identificar click de mouse
+				botao.addActionListener(this); 
 				add(botao);
 			}
 		}
@@ -49,6 +53,7 @@ public class JogoDosOito extends JFrame implements KeyListener {
 		setVisible(true);
 	}
 
+        @Override
 	public void keyPressed(KeyEvent e) {
 		int keyCode = e.getKeyCode();
 		switch (keyCode) {
@@ -66,16 +71,11 @@ public class JogoDosOito extends JFrame implements KeyListener {
 			break;
 		}
 	}
-
-	public void keyTyped(KeyEvent e) {
-	}
-
-	public void keyReleased(KeyEvent e) {
-	}
-
+        
 	private void mover(int linha, int coluna) {
 		int linhaVazia = -1;
 		int colunaVazia = -1;
+		//Identifica o botao vazio
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 3; j++) {
 				if (tabuleiro[i][j] == 0) {
@@ -93,10 +93,7 @@ public class JogoDosOito extends JFrame implements KeyListener {
 		tabuleiro[linhaVazia][colunaVazia] = tabuleiro[novaLinha][novaColuna];
 		tabuleiro[novaLinha][novaColuna] = 0;
 		atualizarTabuleiro();
-		if (jogoConcluido()) {
-			JOptionPane.showMessageDialog(this, "Parabéns, você venceu!");
-			reiniciarJogo();
-		}
+		
 	}
 
 	public static void main(String[] args) {
@@ -117,21 +114,29 @@ public class JogoDosOito extends JFrame implements KeyListener {
 	}
 
 	private boolean movimentarPeca(int linha, int coluna) {
+		//Cima
 		if (linha > 0 && tabuleiro[linha - 1][coluna] == 0) {
 			tabuleiro[linha - 1][coluna] = tabuleiro[linha][coluna];
 			tabuleiro[linha][coluna] = 0;
+			atualizarTabuleiro();
 			return true;
+		//Baixo
 		} else if (linha < 2 && tabuleiro[linha + 1][coluna] == 0) {
 			tabuleiro[linha + 1][coluna] = tabuleiro[linha][coluna];
 			tabuleiro[linha][coluna] = 0;
+			atualizarTabuleiro();
 			return true;
+		//Esquerda
 		} else if (coluna > 0 && tabuleiro[linha][coluna - 1] == 0) {
 			tabuleiro[linha][coluna - 1] = tabuleiro[linha][coluna];
 			tabuleiro[linha][coluna] = 0;
+			atualizarTabuleiro();
 			return true;
+		//Direita
 		} else if (coluna < 2 && tabuleiro[linha][coluna + 1] == 0) {
 			tabuleiro[linha][coluna + 1] = tabuleiro[linha][coluna];
 			tabuleiro[linha][coluna] = 0;
+			atualizarTabuleiro();
 			return true;
 		}
 		return false;
@@ -141,6 +146,7 @@ public class JogoDosOito extends JFrame implements KeyListener {
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 3; j++) {
 				JButton botao = botoes[i][j];
+				
 				int valor = tabuleiro[i][j];
 				if (valor == 0) {
 					botao.setText("");
@@ -149,10 +155,40 @@ public class JogoDosOito extends JFrame implements KeyListener {
 				}
 			}
 		}
+		if (jogoConcluido()) {
+			JOptionPane.showMessageDialog(this, "Parabéns, você venceu!");
+			reiniciarJogo();
+		}
 	}
 
 	private void reiniciarJogo() {
 		tabuleiro = new int[][] { { 1, 2, 3 }, { 4, 5, 6 }, { 7, 8, 0 } };
 		atualizarTabuleiro();
 	}
+
+	@Override
+	//Listeners dos botões (peças) // Idenficando qual botao foi clicado
+	public void actionPerformed(ActionEvent e) {
+		Integer botao = Integer.parseInt(((AbstractButton) e.getSource()).getText());
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
+				if (tabuleiro[i][j] == botao) {
+					//System.out.println("Botão " +  i + " e " + j + " = " + tabuleiro[i][j]);
+					movimentarPeca(i, j);
+					return;
+				}
+				}
+			}
+			
+	}
+
+	@Override
+    public void keyTyped(KeyEvent e) {
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+
+	}
 }
+
